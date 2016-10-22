@@ -9,12 +9,12 @@
 #include <netinet/in.h>
 #include <netdb.h> 
 #include "hashTable.h"
-
+#include "cluster.h"
 
 class Server
 {
 public:
-    Server(int port, char* configfile, ParallelHashTable *pht_obj, ParallelHashTable * pht_type);
+    Server(int port, char* configfile, ParallelHashTable *pht_obj, ParallelHashTable * pht_type, Cluster * cluster);
     
     int MessageHandler(char* buf, int count,  struct sockaddr_in clientAddr, socklen_t clientAddrSize);        
    
@@ -33,6 +33,9 @@ public:
 //Hash Table
     ParallelHashTable *pht_obj = NULL;
     ParallelHashTable *pht_type = NULL;
+
+//Cluster Configuration
+    Cluster * cluster;
 
 
 };

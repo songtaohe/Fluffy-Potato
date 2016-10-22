@@ -1,8 +1,9 @@
 CPPC=g++
 CPPFLAGS= -o2 -pthread -std=c++11
+OBJ=main.o server.o hashTable.o index.o cluster.o
 
-Server : main.o server.o hashTable.o index.o
-	$(CPPC) $(CPPFLAGS) main.o server.o hashTable.o index.o -o server
+Server : $(OBJ)
+	$(CPPC) $(CPPFLAGS) $(OBJ) -o server
 
 main.o : main.cpp
 	$(CPPC) $(CPPFLAGS) -c main.cpp -o main.o
@@ -15,6 +16,10 @@ hashTable.o : hashTable.cpp
 
 index.o : index.cpp
 	$(CPPC) $(CPPFLAGS) -c index.cpp -o index.o
+
+cluster.o : cluster.cpp
+	$(CPPC) $(CPPFLAGS) -c cluster.cpp -o cluster.o
+
 clean :
 	rm *.o
 

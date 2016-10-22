@@ -1,10 +1,11 @@
 #include "server.h"
 
-Server::Server(int port, char* configfile, ParallelHashTable *pht_obj, ParallelHashTable * pht_type)
+Server::Server(int port, char* configfile, ParallelHashTable *pht_obj, ParallelHashTable * pht_type, Cluster * cluster)
 {
     this->s_port = port;
     this->pht_obj = pht_obj;
     this->pht_type = pht_type;
+    this->cluster = cluster;
 }
 
 int Server::Start(void)
