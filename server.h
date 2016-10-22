@@ -8,11 +8,13 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <netdb.h> 
+#include "hashTable.h"
+
 
 class Server
 {
 public:
-    Server(int port, char* configfile);
+    Server(int port, char* configfile, ParallelHashTable *pht_obj, ParallelHashTable * pht_type);
     
     int MessageHandler(char* buf, int count,  struct sockaddr_in clientAddr, socklen_t clientAddrSize);        
    
@@ -27,6 +29,10 @@ public:
 
 //pthread
     pthread_t serverThread;   
+
+//Hash Table
+    ParallelHashTable *pht_obj = NULL;
+    ParallelHashTable *pht_type = NULL;
 
 
 };

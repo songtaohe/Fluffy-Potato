@@ -1,8 +1,10 @@
 #include "server.h"
 
-Server::Server(int port, char* configfile)
+Server::Server(int port, char* configfile, ParallelHashTable *pht_obj, ParallelHashTable * pht_type)
 {
     this->s_port = port;
+    this->pht_obj = pht_obj;
+    this->pht_type = pht_type;
 }
 
 int Server::Start(void)
@@ -19,6 +21,16 @@ int Server::MessageHandler(char* buf, int count,  struct sockaddr_in clientAddr,
 {
     buf[count] = 0;
     printf("%s\n",buf);
+
+    if(this->s_port == 8001)
+        this->pht_obj->Insert(buf,NULL,0);
+    else
+    {
+        struct HashTableEntry* result = this->pht_obj->Query(buf);
+        if(result == NULL) printf("Not found!\n");
+        else printf("Found %lu %s\n",result->Key, result->name);
+    }
+    
 }
 
 

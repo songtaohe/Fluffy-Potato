@@ -6,6 +6,11 @@
 #define CMD_Load_Obj               3
 #define CMD_Query_Obj              4
 
+#define SHAPE_POINT                1
+#define SHAPE_RECT                 2
+#define SHAPE_GIRD                 3
+
+
 struct Header
 {
     unsigned char cmd;
