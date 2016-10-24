@@ -7,13 +7,14 @@
 class Node
 {
 public: 
-    Node(char* name, char* ip, char* baseport);
+    //Node(char* name, char* ip, char* baseport);
+    int NodeInit(char* name, char* ip, char* baseport);
 
 char* name;
 char* ip;
 char* baseport;
-
-
+struct sockaddr_in node_addr;
+int node_socket;
 
 };
 

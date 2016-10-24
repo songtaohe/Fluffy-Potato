@@ -1,7 +1,11 @@
 #ifndef PSDDPF_HEADER
 #define PSDDPF_HEADER
 
-#define CMD_Create_Type            1
+#define RET_ERROR                  -1
+#define RET_SUCCESS                0
+
+
+#define CMD_CREATE_TYPE            1
 #define CMD_Store_Obj              2
 #define CMD_Load_Obj               3
 #define CMD_Query_Obj              4
@@ -9,6 +13,14 @@
 #define SHAPE_POINT                1
 #define SHAPE_RECT                 2
 #define SHAPE_GIRD                 3
+
+#define INDEX_LIST                 1
+#define INDEX_RTREE                2
+
+#define OBJ_READONLY               1
+#define OBJ_TEMPERORY              2
+#define OBJ_PRESISTENT             4
+#define OBJ_ATOM_FETCH             8
 
 
 struct Header
@@ -42,8 +54,9 @@ struct Gird
 struct CreateTypeHeader
 {
     unsigned char index_type; // The way to index it. E.g., no index, qtree, rtree ...
-    int typeNameLen;
-    unsigned char typeName;
+    unsigned int flag;
+    int typeNameLength;
+    char typeName;
 };
 
 struct StoreObjPointHeader
@@ -71,6 +84,15 @@ struct QueryObjHeader
     struct Rect queryRect;
     unsigned char data;
 };
+
+
+struct ObjectAttribute
+{
+    int flag;
+    int time_to_live;
+    //TODO
+};
+
 
 
 #endif

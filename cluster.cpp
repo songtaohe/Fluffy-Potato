@@ -1,7 +1,9 @@
 #include "cluster.h"
+#include "common.h"
+#include "interface.h"
 
 
-Node::Node(char* name, char* ip, char* baseport)
+int Node::NodeInit(char* name, char* ip, char* baseport)
 {
     this->name = (char*)malloc(sizeof(char)*(strlen(name)+1));
     memcpy(this->name, name, strlen(name)+1);
@@ -11,6 +13,13 @@ Node::Node(char* name, char* ip, char* baseport)
 
     this->baseport = (char*)malloc(sizeof(char)*(strlen(baseport)+1));
     memcpy(this->baseport, baseport, strlen(baseport)+1);
+
+    memset((char *) &(this->node_addr), 0, sizeof(this->node_addr));
+    this->node_addr.sin_family = AF_INET;
+    this->node_addr.sin_port = htons(atoi(baseport));
+    inet_aton(ip, &(this->node_addr.sin_addr));
+
+    this->node_socket = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
 
 }
 
@@ -30,7 +39,7 @@ Cluster::Cluster(char* thisNode, char* configFile)
         fscanf(fp,"%s",ip);
         fscanf(fp,"%s",baseport);
 
-        this->nodelist[i].Node(name,ip,baseport);
+        this->nodelist[i].NodeInit(name,ip,baseport);
 
         if(strcmp(name, thisNode) == 0)
         {
