@@ -4,8 +4,6 @@
 #ifndef IndexHeader
 #define IndexHeader
 
-
-
 struct IndexEntity
 {
     union{
@@ -19,15 +17,18 @@ struct IndexEntity
 
 class IndexBase{
 public:
+    IndexBase(int type){this->type = type;};
     virtual struct IndexEntity** QueryRect(struct Rect range, int boundary) = 0;
     virtual int Insert(struct IndexEntity* data) = 0;
+    int type;
 };
 
 
 class IndexList : public IndexBase
 {
 public:
-    IndexList(int shape_type){
+    IndexList(int shape_type): IndexBase(INDEX_LIST)
+    {
         this->shape_type = shape_type;
         pthread_rwlock_init(&(this->rwlock), NULL);
     };

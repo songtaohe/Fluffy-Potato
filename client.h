@@ -10,10 +10,10 @@ public:
 //*********  Core API functions **********
     //Create a new type. 
     // index_type could be 'INDEX_LIST' or 'INDEX_RTREE' 
-    int CreateType(char* name, int index_type, int flag);
+    int CreateType(char* name, int shape_type, int index_type, int flag);
 
     //Store an object with full name. t_name@sub_name
-    int StoreObject(char* t_name, char* sub_name, void* buf, int length);    
+    int StoreObject(char* t_name, char* sub_name, union Shape shape, void* buf, int length);    
 
     //Store an object to the server. The 'subname' will be automatically generated.
     int StoreObjectNameless(char* t_name, void* buf, int length);

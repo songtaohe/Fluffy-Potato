@@ -21,8 +21,18 @@ public:
     int Start();
     int Wait();
 
+//  Core API Functions
+    int CreateType(char* buf, int count,  struct sockaddr_in clientAddr, socklen_t clientAddrSize);
+    int StoreObject(char* buf, int count,  struct sockaddr_in clientAddr, socklen_t clientAddrSize);
+    
+
+
+
+
+
 //*** Server Info ***     		
-    char recvBuffer[MAX_BUFFER_SIZE];
+    char recvbuf[MAX_BUFFER_SIZE];
+    char sendbuf[MAX_BUFFER_SIZE];// Should be changed to sendbuf....TODO
     int s_sockfd;
     int s_port;
     struct sockaddr_in s_addr;

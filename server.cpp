@@ -1,4 +1,5 @@
 #include "server.h"
+#include "index.h"
 
 Server::Server(int port, char* configfile, ParallelHashTable *pht_obj, ParallelHashTable * pht_type, Cluster * cluster)
 {
@@ -18,11 +19,76 @@ int Server::Wait(void)
     pthread_join(this->serverThread, NULL);
 }
 
+
+
+
+int Server::CreateType(char* buf, int count,  struct sockaddr_in clientAddr, socklen_t clientAddrSize)
+{
+    struct Header * h = (struct Header *)(buf);
+    struct CreateTypeHeader *cth = (struct CreateTypeHeader*)(&(h->cmd_header));
+    
+    printf("Server Receive %s\n", &(cth->typeName));
+    
+    IndexBase * base = NULL;
+    int size = 0;
+
+    if(cth->index_type == INDEX_LIST)
+    {
+        IndexList* index = new IndexList(cth->shape_type);
+        base = (IndexBase*)index;
+        size = sizeof(index);
+    }    
+    
+    void* hashEntity = this->pht_type->Insert(&(cth->typeName),base,size);
+
+    if(hashEntity == NULL)
+    {
+        delete base;
+        memcpy(this->sendbuf,"Name Existed!\0",13);
+    }
+    else
+    {
+        memcpy(this->sendbuf,"Type Created!\0",13);
+    }
+    sendto(this->s_sockfd, this->sendbuf, 13, 0, (struct sockaddr *)&(clientAddr), clientAddrSize);
+}
+
+
+int Server::StoreObject(char* buf, int count,  struct sockaddr_in clientAddr, socklen_t clientAddrSize)
+{
+    struct Header * h = (struct Header *)(buf);
+    struct StoreObjectHeader *soh = (struct StoreObjectHeader*)(&(h->cmd_header));
+    
+    //TODO
+    
+    //Check Type  index?  readonly?
+
+    //Insert to obj hash
+    //  existed? --> overwrite?
+    
+    //Insert to index
+
+    //feedback
+}
+
+
 int Server::MessageHandler(char* buf, int count,  struct sockaddr_in clientAddr, socklen_t clientAddrSize)
 {
     buf[count] = 0;
     printf("%s\n",buf);
 
+    switch(buf[0]){
+        case CMD_CREATE_TYPE : this->CreateType(buf, count, clientAddr, clientAddrSize); break;
+        case CMD_STORE_OBJ : this->StoreObject(buf, count, clientAddr, clientAddrSize); break;
+    
+
+
+
+        default:
+            break;
+    }    
+
+    /*
     if(this->s_port == 8001)
         this->pht_obj->Insert(buf,NULL,0);
     else
@@ -31,6 +97,8 @@ int Server::MessageHandler(char* buf, int count,  struct sockaddr_in clientAddr,
         if(result == NULL) printf("Not found!\n");
         else printf("Found %lu %s\n",result->Key, result->name);
     }
+
+    */
     
 }
 
@@ -61,10 +129,10 @@ void* server_thread(void* context)
     while (1) {
         struct sockaddr_in clientaddr;
         socklen_t clientlen;
-        int n = recvfrom(_this_->s_sockfd, _this_->recvBuffer, MAX_BUFFER_SIZE, 0,
+        int n = recvfrom(_this_->s_sockfd, _this_->recvbuf, MAX_BUFFER_SIZE, 0,
          (struct sockaddr *) &clientaddr, &clientlen);
-
-        _this_->MessageHandler(_this_->recvBuffer, n, clientaddr, clientlen);
+        if(n>0)
+            _this_->MessageHandler(_this_->recvbuf, n, clientaddr, clientlen);
     }
     
 }

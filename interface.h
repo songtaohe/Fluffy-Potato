@@ -6,14 +6,16 @@
 
 
 #define CMD_CREATE_TYPE            1
-#define CMD_Store_Obj              2
+#define CMD_STORE_OBJ              2
 #define CMD_Load_Obj               3
 #define CMD_Query_Obj              4
 
 #define SHAPE_POINT                1
 #define SHAPE_RECT                 2
 #define SHAPE_GIRD                 3
+#define SHAPE_NULL                 4
 
+#define INDEX_NULL                 0
 #define INDEX_LIST                 1
 #define INDEX_RTREE                2
 
@@ -50,24 +52,33 @@ struct Gird
     //TBD
 };
 
+union Shape
+{
+    struct Point point;
+    struct Rect rect;
+    struct Gird gird;
+};
+
+
 
 struct CreateTypeHeader
 {
     unsigned char index_type; // The way to index it. E.g., no index, qtree, rtree ...
     unsigned int flag;
+    unsigned char shape_type;
     int typeNameLength;
     char typeName;
 };
 
-struct StoreObjPointHeader
+struct StoreObjectHeader
 {
-    unsigned int typeNameLen;
-    unsigned int subNameLen;
-    unsigned int objSize;
+    unsigned int typeNameLength;
+    unsigned int subNameLength;
+    unsigned int objSize; 
     unsigned int segmentSize; // Should be equal to the objSize if there is only on segment
     unsigned int segmentId; // start from 1.
     unsigned int segmentTotal; // Should be one if the data is smaller than one packet's capacity. 
-    struct Point point;
+    union Shape shape;
     unsigned char data;
 };
 

@@ -60,13 +60,23 @@ void* ParallelHashTable::Insert(char* name, void* buf, int bufsize)
     uint64_t key = this->FNV_Hash_64(name,strlen(name));
     uint32_t index = key % (this->size);
 
+    int IsNameConflict = 0;
     struct HashTableEntry ** cur = &(this->table[index]);
     pthread_rwlock_wrlock(&(this->rwlock[index]));
-    {    
+        
         while(*cur!= NULL)
         {
+            //Check the name
+            int cmp = strcmp((*cur)->name, name);
+            if(cmp == 0) 
+            {
+                IsNameConflict = 1;
+                break;
+            }
             cur = &((*cur)->next);
         }
+
+        if(IsNameConflict == 1) goto UNLOCK;
 
         *cur = (struct HashTableEntry*) malloc(sizeof(struct HashTableEntry));
         (*cur) -> next = NULL;
@@ -84,9 +94,12 @@ void* ParallelHashTable::Insert(char* name, void* buf, int bufsize)
         (*cur) -> type = HashTableLocal; // Local
         (*cur) -> Key = key; // TBD
         (*cur) -> index = NULL;
-
-    }
+UNLOCK:
+    
     pthread_rwlock_unlock(&(this->rwlock[index]));
+
+    if(IsNameConflict == 1) return NULL;
+
 
     return (void*)(*cur); // This will be used as key of 
 }
