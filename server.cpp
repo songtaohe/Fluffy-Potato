@@ -28,7 +28,14 @@ int Server::CreateType(char* buf, int count,  struct sockaddr_in clientAddr, soc
     struct CreateTypeHeader *cth = (struct CreateTypeHeader*)(&(h->cmd_header));
     
     printf("Server Receive %s\n", &(cth->typeName));
-    
+    struct Type * _type = (struct Type*)malloc(sizeof(struct Type));    
+
+    _type->index_type = cth->index_type;
+    _type->shape_type = cth->shape_type;
+    _type->flag = cth->flag;
+    _type->indexbase = NULL;
+
+
     IndexBase * base = NULL;
     int size = 0;
 
@@ -36,10 +43,11 @@ int Server::CreateType(char* buf, int count,  struct sockaddr_in clientAddr, soc
     {
         IndexList* index = new IndexList(cth->shape_type);
         base = (IndexBase*)index;
-        size = sizeof(index);
+        _type->indexbase = base;
+        printf("Set indexbase to %p\n",base);
     }    
-    
-    void* hashEntity = this->pht_type->Insert(&(cth->typeName),base,size);
+
+    void* hashEntity = this->pht_type->Insert(&(cth->typeName),_type,sizeof(struct Type));
 
     if(hashEntity == NULL)
     {
@@ -58,10 +66,84 @@ int Server::StoreObject(char* buf, int count,  struct sockaddr_in clientAddr, so
 {
     struct Header * h = (struct Header *)(buf);
     struct StoreObjectHeader *soh = (struct StoreObjectHeader*)(&(h->cmd_header));
-    
-    //TODO
-    
+    int ret = RET_SUCCESS;
+
+    char t_name[256];
+    char full_name[256];
+
+    memcpy(t_name, &(soh->data), soh->typeNameLength);
+    t_name[soh->typeNameLength] = 0;
+
+    printf("t_name %s\n",t_name);
+
+    memcpy(full_name, &(soh->data), soh->typeNameLength + soh->subNameLength + 1);
+    full_name[soh->typeNameLength + soh->subNameLength + 1] = 0;
+
+    printf("full_name %s\n",full_name);
+    printf("data %s\n",&(soh->data) + soh->dataOffset);
+
+
+    //TODO    
     //Check Type  index?  readonly?
+    struct HashTableEntry* h_type = this->pht_type->Query(t_name);
+    printf("Mark query type %p\n",h_type);
+    if(h_type == NULL) 
+    {
+        fprintf(stderr, "StoreObject error: Type Undefined\n");
+        ret = RET_ERROR;
+    }
+    else
+    {
+
+        struct Type *_type = (struct Type*)(h_type->data);
+        struct HashTableEntry* h_obj = this->pht_obj->Query(full_name);
+        printf("Query h_obj %p\n",h_obj);
+
+        if(h_obj != NULL)
+        {
+            if(_type->flag & OBJ_READONLY !=0)
+            {
+                fprintf(stderr, "StoreObject error: Cannot Overwrite Readonly Object \n");
+                ret = RET_ERROR;
+            }
+            else
+            {
+                free(h_obj->data);
+                h_obj->data = malloc(soh->objSize);
+                memcpy(h_obj->data, &(soh->data) + soh->dataOffset, soh->objSize);
+                //TODO change position!!!
+
+            }
+        }
+        else
+        {
+            printf("Mark Insert\n");
+            void* _hash = this->pht_obj->Insert(full_name, &(soh->data) + soh->dataOffset, soh->objSize);
+            if(_type->index_type == INDEX_LIST)
+            {
+                struct IndexEntity IE;
+                IE.shape = soh->shape;
+                IE.toHash = _hash;
+                IE.next = NULL;
+                printf("Insert Index %p\n",_type->indexbase);
+                
+                _type->indexbase->Insert(&IE);
+            }            
+        }
+        
+    }
+    printf("Mark ret\n");
+    if(ret == RET_ERROR)
+    {
+        memcpy(this->sendbuf,"Error!       \0",13);
+    }
+    else
+    {
+        memcpy(this->sendbuf,"Successful!  \0",13);
+    }
+
+    sendto(this->s_sockfd, this->sendbuf, 13, 0, (struct sockaddr *)&(clientAddr), clientAddrSize);
+
 
     //Insert to obj hash
     //  existed? --> overwrite?
@@ -69,6 +151,7 @@ int Server::StoreObject(char* buf, int count,  struct sockaddr_in clientAddr, so
     //Insert to index
 
     //feedback
+
 }
 
 

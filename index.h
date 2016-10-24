@@ -6,20 +6,26 @@
 
 struct IndexEntity
 {
-    union{
-        struct Rect rect;
-        struct Point point;
-    };
+    union Shape shape;
     void* toHash; // to hash entity and data
     struct IndexEntity* next; // query list
 };
 
+class IndexBase;
+
+struct Type
+{
+    unsigned char index_type;
+    unsigned char shape_type;
+    unsigned int flag;
+    IndexBase * indexbase;
+};
 
 class IndexBase{
 public:
     IndexBase(int type){this->type = type;};
     virtual struct IndexEntity** QueryRect(struct Rect range, int boundary) = 0;
-    virtual int Insert(struct IndexEntity* data) = 0;
+    virtual int Insert(struct IndexEntity* data) = 0;  //Copy
     int type;
 };
 

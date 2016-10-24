@@ -69,7 +69,8 @@ int Client::StoreObject(char* t_name, char* sub_name, union Shape shape, void* b
 
     *ptr=0;
     ptr++;
-    
+   
+    soh->dataOffset = ptr - (char*)&(soh->data); 
     memcpy(ptr,buf,length);
     
     size = sizeof(struct Header) + sizeof(struct StoreObjectHeader) + soh->typeNameLength + soh->subNameLength + 1 + length - 2;    

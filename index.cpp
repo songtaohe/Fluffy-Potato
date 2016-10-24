@@ -2,6 +2,7 @@
 
 int IndexList::Insert(struct IndexEntity * data)
 {
+    printf("Inside Insert \n");
     pthread_rwlock_wrlock(&(this->rwlock));
     {
         if(this->LinkHead == NULL)
@@ -38,8 +39,8 @@ struct IndexEntity** IndexList::QueryRect(struct Rect range, int boundary)
             switch(this->shape_type)
             {
                 case SHAPE_POINT:
-                    if(head->point.lat >= range.latmin && head->point.lat <= range.latmax)
-                        if(head->point.lon >= range.lonmin && head->point.lon <= range.lonmax)
+                    if(head->shape.point.lat >= range.latmin && head->shape.point.lat <= range.latmax)
+                        if(head->shape.point.lon >= range.lonmin && head->shape.point.lon <= range.lonmax)
                             flag = 1;
                     break;
                 

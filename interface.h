@@ -1,3 +1,4 @@
+
 #ifndef PSDDPF_HEADER
 #define PSDDPF_HEADER
 
@@ -61,6 +62,9 @@ union Shape
 
 
 
+struct Type;
+
+
 struct CreateTypeHeader
 {
     unsigned char index_type; // The way to index it. E.g., no index, qtree, rtree ...
@@ -79,6 +83,7 @@ struct StoreObjectHeader
     unsigned int segmentId; // start from 1.
     unsigned int segmentTotal; // Should be one if the data is smaller than one packet's capacity. 
     union Shape shape;
+    int dataOffset;
     unsigned char data;
 };
 
