@@ -8,8 +8,8 @@
 
 #define CMD_CREATE_TYPE            1
 #define CMD_STORE_OBJ              2
-#define CMD_Load_Obj               3
-#define CMD_Query_Obj              4
+#define CMD_LOAD_OBJ               3
+#define CMD_QUERY_OBJECT_RANGE     4
 
 #define SHAPE_POINT                1
 #define SHAPE_RECT                 2
@@ -87,16 +87,16 @@ struct StoreObjectHeader
     unsigned char data;
 };
 
-struct LoadObjHeader
+struct LoadObjectHeader
 {
-    unsigned int typeNameLen;
-    unsigned int subNameLen;
+    unsigned int typeNameLength;
+    unsigned int subNameLength;
     unsigned char data;
 };
 
-struct QueryObjHeader
+struct QueryObjectRangeHeader
 {
-    unsigned int typeNameLen;
+    unsigned int typeNameLength;
     struct Rect queryRect;
     unsigned char data;
 };

@@ -16,6 +16,7 @@ public:
     int StoreObject(char* t_name, char* sub_name, union Shape shape, void* buf, int length);    
 
     //Store an object to the server. The 'subname' will be automatically generated.
+    //Simply set subname field to NULL TODO
     int StoreObjectNameless(char* t_name, void* buf, int length);
  
     //Query the name list of objects within a certain range

@@ -89,3 +89,72 @@ int Client::StoreObject(char* t_name, char* sub_name, union Shape shape, void* b
     return RET_SUCCESS;
 }
 
+
+int Client::QueryObjectRange(char* t_name, struct Rect range, char** result)
+{
+    struct Header * h = (struct Header *)(this->sendbuf);
+    struct QueryObjectRangeHeader *qorh = (struct QueryObjectRangeHeader*)(&(h->cmd_header));
+    int size = 0;
+    struct sockaddr_in s_addr;
+    socklen_t slen = 0;
+    int ret;
+    // Create Packet
+    h->cmd = CMD_QUERY_OBJECT_RANGE;
+    qorh->typeNameLength = strlen(t_name) + 1;
+    qorh->queryRect = range;
+    memcpy(&(qorh->data),t_name,strlen(t_name));
+    ((char*)&(qorh->data))[qorh->typeNameLength - 1] = 0;
+    size = sizeof(struct Header) + sizeof(struct QueryObjectRangeHeader) + qorh->typeNameLength - 2;
+
+    sendto(this->thisNode->node_socket, this->sendbuf, size, 0, (struct sockaddr *)&(this->thisNode->node_addr), sizeof(this->thisNode->node_addr));
+    ret = recvfrom(this->thisNode->node_socket, this->recvbuf, MAX_BUFFER_SIZE, 0, (struct sockaddr *)&s_addr, &slen);
+
+    if(ret<=0) return RET_ERROR;
+    
+    unsigned int *count = (unsigned int *)(this->recvbuf);
+    *result = (char*)malloc(sizeof(char)*(ret-4));
+    memcpy(*result, (this->recvbuf)+4, ret-4);
+    return *count;
+}
+
+int Client::LoadObject(char* t_name, char* sub_name, void** result, int* length)
+{
+    struct Header *h = (struct Header *)(this->sendbuf);
+    struct LoadObjectHeader *loh = (struct LoadObjectHeader*)(&(h->cmd_header));
+    int size = 0;
+    struct sockaddr_in s_addr;
+    socklen_t slen = 0;
+    int ret;
+    char* ptr;
+
+    h->cmd = CMD_LOAD_OBJ;
+    loh->typeNameLength = strlen(t_name);
+    loh->subNameLength = (sub_name == NULL)?0:strlen(sub_name);
+    ptr = (char*)&(loh->data);
+    ptr += sprintf(ptr,"%s",t_name);
+    if(sub_name!=NULL)
+    {
+        ptr += sprintf(ptr,"@%s",sub_name);
+    }
+
+    *ptr=0;
+    ptr++;
+
+    size = sizeof(struct Header) + sizeof(struct StoreObjectHeader) + loh->typeNameLength + loh->subNameLength + 1 - 2;
+
+    sendto(this->thisNode->node_socket, this->sendbuf, size, 0, (struct sockaddr *)&(this->thisNode->node_addr), sizeof(this->thisNode->node_addr));
+    ret = recvfrom(this->thisNode->node_socket, this->recvbuf, MAX_BUFFER_SIZE, 0, (struct sockaddr *)&s_addr, &slen);
+
+    if(ret<=0) return RET_ERROR;
+
+    *result = malloc(ret);
+    memcpy(*result, (this->recvbuf), ret);
+    *length = ret;
+
+    return RET_SUCCESS;
+}
+
+
+
+
+
