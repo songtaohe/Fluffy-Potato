@@ -41,7 +41,7 @@ int Client::CreateType(char* name,int shape_type, int index_type, int flag)
 
     //Test
     this->recvbuf[ret] = 0;
-    printf("CreateType result: %s\n",this->recvbuf);
+    if(DEBUG) printf("CreateType result: %s\n",this->recvbuf);
 
 
     return RET_SUCCESS;   
@@ -89,7 +89,7 @@ int Client::StoreObject(char* t_name, char* sub_name, union Shape shape, void* b
 
     //Test
     this->recvbuf[ret] = 0;
-    printf("StoreObject result: %s\n",this->recvbuf);
+    if(DEBUG) printf("StoreObject result: %s\n",this->recvbuf);
 
 
     return RET_SUCCESS;
@@ -120,7 +120,7 @@ int Client::QueryObjectRange(char* t_name, struct Rect range, char** result)
     unsigned int *count = (unsigned int *)(this->recvbuf);
     *result = (char*)malloc(sizeof(char)*(ret-sizeof(unsigned int)));
     memcpy(*result, (this->recvbuf)+sizeof(unsigned int), ret-sizeof(unsigned int));
-    printf("Query Result %d:\n%s\n",*count, *result);
+    if(DEBUG) printf("Query Result %d:\n%s\n",*count, *result);
     return *count;
 }
 
@@ -150,7 +150,7 @@ int Client::LoadObject(char* t_name, char* sub_name, void** result, int* length)
 
     size = sizeof(struct Header) + sizeof(struct LoadObjectHeader) + loh->typeNameLength + loh->subNameLength + 1 - 2;
 
-    printf("Client::LoadObject %d %s\n",size, &(loh->data));
+    if(DEBUG) printf("Client::LoadObject %d %s\n",size, &(loh->data));
 
     sendto(this->thisNode->node_socket, this->sendbuf, size, 0, (struct sockaddr *)&(this->thisNode->node_addr), sizeof(this->thisNode->node_addr));
     ret = recvfrom(this->thisNode->node_socket, this->recvbuf, MAX_BUFFER_SIZE, 0, (struct sockaddr *)&s_addr, &slen);
@@ -161,7 +161,7 @@ int Client::LoadObject(char* t_name, char* sub_name, void** result, int* length)
     memcpy(*result, (this->recvbuf), ret);
     *length = ret;
 
-    printf("LoadObject %d %s\n",ret,*result);
+    if(DEBUG) printf("LoadObject %d %s\n",ret,*result);
 
     return RET_SUCCESS;
 }
