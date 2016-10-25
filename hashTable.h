@@ -14,6 +14,7 @@ struct HashTableEntry
     uint64_t Key;
     char* name;
     void* data;
+    int datasize;
     int route; // You may need to get this data from another machine.
     struct HashTableEntry* next;
     void* index;

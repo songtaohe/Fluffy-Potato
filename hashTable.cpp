@@ -88,6 +88,7 @@ void* ParallelHashTable::Insert(char* name, void* buf, int bufsize)
         {
             (*cur) -> data = (void*)malloc(bufsize);  
             memcpy((*cur) -> data, buf, bufsize);
+            (*cur) -> datasize = bufsize;
         }
 
 

@@ -112,8 +112,9 @@ int Client::QueryObjectRange(char* t_name, struct Rect range, char** result)
     if(ret<=0) return RET_ERROR;
     
     unsigned int *count = (unsigned int *)(this->recvbuf);
-    *result = (char*)malloc(sizeof(char)*(ret-4));
-    memcpy(*result, (this->recvbuf)+4, ret-4);
+    *result = (char*)malloc(sizeof(char)*(ret-sizeof(unsigned int)));
+    memcpy(*result, (this->recvbuf)+sizeof(unsigned int), ret-sizeof(unsigned int));
+    printf("Query Result %d:\n%s\n",*count, *result);
     return *count;
 }
 
@@ -140,7 +141,10 @@ int Client::LoadObject(char* t_name, char* sub_name, void** result, int* length)
     *ptr=0;
     ptr++;
 
-    size = sizeof(struct Header) + sizeof(struct StoreObjectHeader) + loh->typeNameLength + loh->subNameLength + 1 - 2;
+
+    size = sizeof(struct Header) + sizeof(struct LoadObjectHeader) + loh->typeNameLength + loh->subNameLength + 1 - 2;
+
+    printf("Client::LoadObject %d %s\n",size, &(loh->data));
 
     sendto(this->thisNode->node_socket, this->sendbuf, size, 0, (struct sockaddr *)&(this->thisNode->node_addr), sizeof(this->thisNode->node_addr));
     ret = recvfrom(this->thisNode->node_socket, this->recvbuf, MAX_BUFFER_SIZE, 0, (struct sockaddr *)&s_addr, &slen);
@@ -150,6 +154,8 @@ int Client::LoadObject(char* t_name, char* sub_name, void** result, int* length)
     *result = malloc(ret);
     memcpy(*result, (this->recvbuf), ret);
     *length = ret;
+
+    printf("LoadObject %d %s\n",ret,*result);
 
     return RET_SUCCESS;
 }

@@ -24,7 +24,8 @@ public:
 //  Core API Functions
     int CreateType(char* buf, int count,  struct sockaddr_in clientAddr, socklen_t clientAddrSize);
     int StoreObject(char* buf, int count,  struct sockaddr_in clientAddr, socklen_t clientAddrSize);
-    
+    int QueryObjectRange(char* buf, int count,  struct sockaddr_in clientAddr, socklen_t clientAddrSize);
+    int LoadObject(char* buf, int count,  struct sockaddr_in clientAddr, socklen_t clientAddrSize);
 
 
 

@@ -154,6 +154,116 @@ int Server::StoreObject(char* buf, int count,  struct sockaddr_in clientAddr, so
 
 }
 
+int Server::QueryObjectRange(char* buf, int count,  struct sockaddr_in clientAddr, socklen_t clientAddrSize)
+{
+    struct Header * h = (struct Header *)(buf);
+    struct QueryObjectRangeHeader *qorh = (struct QueryObjectRangeHeader*)(&(h->cmd_header));
+    int ret = RET_SUCCESS;
+    char t_name[256];
+    int retsize = 0;
+
+    memcpy(t_name, &(qorh->data), qorh->typeNameLength);
+    t_name[qorh->typeNameLength] = 0;
+
+    struct HashTableEntry* h_type = this->pht_type->Query(t_name);
+    printf("Mark query type %p\n",h_type);
+    if(h_type == NULL)
+    {
+        fprintf(stderr, "QueryObjectRange error: Type Undefined\n");
+        ret = RET_ERROR;
+    }
+    else
+    {
+        struct Type *_type = (struct Type*)(h_type->data);
+        if(_type->index_type != INDEX_NULL)
+        {
+            struct IndexEntity** IElist = _type->indexbase->QueryRect(qorh->queryRect,0);
+            if(IElist != NULL)
+            {
+                struct IndexEntity* IEcur = *IElist;
+                unsigned int *count = (unsigned int*)(this->sendbuf);
+                *count = 0;
+                char* ptr = (char*)(this->sendbuf)+sizeof(unsigned int);
+                while(IEcur != NULL)
+                {   
+                    (*count) ++;
+                    ptr += sprintf(ptr,"%s\n",((struct HashTableEntry*)(IEcur->toHash))->name);
+                    IEcur = IEcur -> next;
+                } 
+                *ptr = 0;
+                ptr++;
+                retsize = ptr - (this->sendbuf);
+            }
+            else
+            {
+                unsigned int *count = (unsigned int*)(this->sendbuf);
+                char* ptr = (char*)(this->sendbuf)+sizeof(unsigned int);
+                *count = 0;
+                sprintf(ptr,"NULL\n\0");
+                retsize = sizeof(unsigned int)+6;
+            }
+        }
+        else
+        {
+            fprintf(stderr, "QueryObjectRange error: No index for type\n");
+            ret = RET_ERROR;
+        }
+    }
+
+    if(ret == RET_ERROR)
+    {
+        memcpy(this->sendbuf,"Error!       \0",13);
+        sendto(this->s_sockfd, this->sendbuf, 13, 0, (struct sockaddr *)&(clientAddr), clientAddrSize);
+    }
+    else
+    {
+        sendto(this->s_sockfd, this->sendbuf, retsize, 0, (struct sockaddr *)&(clientAddr), clientAddrSize);
+    }
+
+    return ret;
+}
+
+
+int Server::LoadObject(char* buf, int count,  struct sockaddr_in clientAddr, socklen_t clientAddrSize)
+{
+    struct Header *h = (struct Header *)(buf);
+    struct LoadObjectHeader *loh = (struct LoadObjectHeader*)(&(h->cmd_header));
+    int retsize = 0;
+    int ret = RET_SUCCESS;
+    char full_name[256];
+
+    memcpy(full_name, &(loh->data), loh->typeNameLength + loh->subNameLength + 1);
+    full_name[loh->typeNameLength + loh->subNameLength + 1] = 0;
+
+    printf("full_name %d %d %d  %s\n",count, loh->typeNameLength , loh->subNameLength ,full_name);
+
+    struct HashTableEntry* h_obj = this->pht_obj->Query(full_name);
+    if(h_obj == NULL)
+    {
+        fprintf(stderr, "LoadObject error: Object not Found\n");
+        ret = RET_ERROR;
+    }
+    else
+    {
+        memcpy(this->sendbuf,h_obj->data, h_obj->datasize);
+        retsize = h_obj->datasize;
+    }
+
+    if(ret == RET_ERROR)
+    {
+        memcpy(this->sendbuf,"Error!       \0",13);
+        sendto(this->s_sockfd, this->sendbuf, 13, 0, (struct sockaddr *)&(clientAddr), clientAddrSize);
+    }
+    else
+    {
+        sendto(this->s_sockfd, this->sendbuf, retsize, 0, (struct sockaddr *)&(clientAddr), clientAddrSize);
+    }
+
+
+    return ret;
+}
+
+
 
 int Server::MessageHandler(char* buf, int count,  struct sockaddr_in clientAddr, socklen_t clientAddrSize)
 {
@@ -163,6 +273,8 @@ int Server::MessageHandler(char* buf, int count,  struct sockaddr_in clientAddr,
     switch(buf[0]){
         case CMD_CREATE_TYPE : this->CreateType(buf, count, clientAddr, clientAddrSize); break;
         case CMD_STORE_OBJ : this->StoreObject(buf, count, clientAddr, clientAddrSize); break;
+        case CMD_QUERY_OBJECT_RANGE : this->QueryObjectRange(buf, count, clientAddr, clientAddrSize); break;
+        case CMD_LOAD_OBJ : this->LoadObject(buf, count, clientAddr, clientAddrSize); break;
     
 
 
