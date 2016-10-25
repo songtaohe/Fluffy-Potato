@@ -1,14 +1,21 @@
 CPPC=g++
-CPPFLAGS= -o2 -pthread -std=c++11
+CPPFLAGS= -o2 -pthread -std=c++11 -fPIC
 OBJ=server.o hashTable.o index.o cluster.o client.o
+#W_OBJ = client.o
 
-All : Client Server
+All : Client Server Wrapper
+
+Wrapper : $(OBJ) pythonWrapper.o
+	$(CPPC) $(CPPFLAGS) pythonWrapper.o $(OBJ) -shared -o pythonWrapper.so
 
 Client : $(OBJ) testClient.o
 	$(CPPC) $(CPPFLAGS) testClient.o $(OBJ) -o client
 
 Server : $(OBJ) main.o
 	$(CPPC) $(CPPFLAGS) main.o $(OBJ) -o server
+
+pythonWrapper.o: pythonWrapper.cpp
+	$(CPPC) $(CPPFLAGS) -c pythonWrapper.cpp -o pythonWrapper.o 
 
 testClient.o : testClient.cpp
 	$(CPPC) $(CPPFLAGS) -c testClient.cpp -o testClient.o
