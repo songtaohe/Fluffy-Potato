@@ -26,6 +26,7 @@ static int init()
 int CreateType(char* t_name, int shape, int index, int flag)
 {
     init();
+    printf("wrapper -> %s\n",t_name);
     return C1->CreateType(t_name,shape,index,flag);
 }
 

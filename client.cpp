@@ -6,6 +6,12 @@ Client::Client(Cluster * cluster)
     this->sendbuf = (char*)malloc(MAX_BUFFER_SIZE);
     this->recvbuf = (char*)malloc(MAX_BUFFER_SIZE);
     this->thisNode = &(this->cluster->nodelist[this->cluster->thisNode]);
+
+    //Set timeout of receiver to 1 second.
+    struct timeval tv;
+    tv.tv_sec = 1;
+    tv.tv_usec = 0;
+    setsockopt(this->thisNode->node_socket, SOL_SOCKET, SO_RCVTIMEO,&tv,sizeof(tv));
 }
 
 int Client::CreateType(char* name,int shape_type, int index_type, int flag)

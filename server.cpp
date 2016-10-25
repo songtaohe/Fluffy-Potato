@@ -268,7 +268,7 @@ int Server::LoadObject(char* buf, int count,  struct sockaddr_in clientAddr, soc
 int Server::MessageHandler(char* buf, int count,  struct sockaddr_in clientAddr, socklen_t clientAddrSize)
 {
     buf[count] = 0;
-    printf("%s\n",buf);
+    //printf("%s\n",buf);
 
     switch(buf[0]){
         case CMD_CREATE_TYPE : this->CreateType(buf, count, clientAddr, clientAddrSize); break;
