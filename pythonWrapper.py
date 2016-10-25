@@ -2,6 +2,23 @@ from ctypes import *
 import code
 import cPickle as pickle
 
+
+SHAPE_NULL  = 0
+SHAPE_POINT = 1
+SHAPE_RECT  = 2
+SHAPE_GIRD  = 3
+
+INDEX_NULL  = 0
+INDEX_LIST  = 1
+INDEX_QTREE = 2
+INDEX_RTREE = 3
+
+OBJ_READONLY   = 1
+OBJ_ATOM_FETCH = 8
+
+
+
+
 class Potato(object):
     def __init__(self,soname):
         self.lib = cdll.LoadLibrary(soname)
@@ -23,17 +40,30 @@ class Potato(object):
         self._LoadObject.argtypes = [c_char_p, c_char_p, POINTER(POINTER(c_char))]
 
 
-    def CreateType(self,t_name, shape, index, flag):
+
+    def CreateType(self,t_name, shape = SHAPE_POINT, index = INDEX_LIST, flag = OBJ_READONLY):
         return self._CreateType(c_char_p(t_name), shape, index, flag)
 
-    def StoreObjectPoint(self, t_name, sub_name, lat, lon, obj):
+    def StoreObject(self, t_name, obj, sub_name = None, shape = SHAPE_POINT, shape_data = [0,0,0,0]):
         string_obj = pickle.dumps(obj)
-        return self._StoreObjectPoint(c_char_p(t_name), c_char_p(sub_name), lat, lon, c_char_p(string_obj))
+        if len(string_obj) > 16000 :
+            print("Error, object size exceeds 16,000! We cannot support so far.\n")
+            return 0
 
-    def QueryObjectRange(self, t_name, latmin, lonmin, latmax, lonmax):
+        if sub_name is None:
+            name = t_name.split('@')
+            t_name = name[0]
+            sub_name = name[1]
+
+        #ONLY POINT NOW
+        return self._StoreObjectPoint(c_char_p(t_name), c_char_p(sub_name), shape_data[0], shape_data[1], c_char_p(string_obj))
+
+
+
+    def QueryObjectRect(self, t_name, rect):
         result = POINTER(c_char)()
         count = c_int(1)
-        ret = self._QueryObjectRange(c_char_p(t_name), c_double(latmin), c_double(lonmin), c_double(latmax), c_double(lonmax), byref(result), byref(count))
+        ret = self._QueryObjectRange(c_char_p(t_name), c_double(rect[0]), c_double(rect[1]), c_double(rect[2]), c_double(rect[3]), byref(result), byref(count))
         if ret > 0:
             return (cast(result,c_char_p).value).split()
         else:
@@ -56,10 +86,10 @@ class Potato(object):
 
 
 mPotato = Potato("/home/songtao/Mapmaking/Fluffy-Potato/pythonWrapper.so")
-mPotato.CreateType("type1",1,1,0)
+mPotato.CreateType("type1")
 A = [1,2,3]
-mPotato.StoreObjectPoint("XXX","k",2,2,A)
-r = mPotato.QueryObjectRange("XXX",0,0,10,10)
+mPotato.StoreObject("XXX@k",A,shape_data=[1,1])
+r = mPotato.QueryObjectRect("XXX",[0,0,100,100])
 print(r)
 
 code.interact(local=locals())
