@@ -71,6 +71,7 @@ int QueryObjectRange(char* t_name, double latmin, double lonmin, double latmax, 
 int LoadObject(char* t_name, char* sub_name, char** obj)
 {
     int length;
+    init();
     return C1->LoadObject(t_name,sub_name, (void**)obj, &length);
 }
 

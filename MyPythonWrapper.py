@@ -16,10 +16,8 @@ INDEX_RTREE = 3
 OBJ_READONLY   = 1
 OBJ_ATOM_FETCH = 8
 
-
-
-
 class Potato(object):
+
     def __init__(self,soname):
         self.lib = cdll.LoadLibrary(soname)
         
@@ -98,11 +96,12 @@ class Potato(object):
         s.close()
 
 
-mPotato = Potato("/var/nfs/Fluffy-Potato/pythonWrapper.so")
-mPotato.CreateType("type1")
+#mPotato = Potato("/var/nfs/Fluffy-Potato/pythonWrapper.so")
+#mPotato.CreateType("type1")
+
 #A = [1,2,3]
 #mPotato.StoreObject("XXX@k",A,shape_data=[1,1])
 #r = mPotato.QueryObjectRect("XXX",[0,0,100,100])
 #print(r)
 
-code.interact(local=locals())
+#code.interact(local=locals())
