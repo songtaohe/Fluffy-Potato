@@ -49,9 +49,10 @@ Cluster::Cluster(char* thisNode, char* configFile)
         if(strcmp(name, thisNode) == 0)
         {
             this->thisNode = i;
+            
         }        
     }
-
+    printf("This node is %d\n",this->thisNode);
 
     fclose(fp);
 }

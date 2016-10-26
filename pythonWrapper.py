@@ -85,11 +85,11 @@ class Potato(object):
         
 
 
-mPotato = Potato("/home/songtao/Mapmaking/Fluffy-Potato/pythonWrapper.so")
+mPotato = Potato("/var/nfs/Fluffy-Potato/pythonWrapper.so")
 mPotato.CreateType("type1")
-A = [1,2,3]
-mPotato.StoreObject("XXX@k",A,shape_data=[1,1])
-r = mPotato.QueryObjectRect("XXX",[0,0,100,100])
-print(r)
+#A = [1,2,3]
+#mPotato.StoreObject("XXX@k",A,shape_data=[1,1])
+#r = mPotato.QueryObjectRect("XXX",[0,0,100,100])
+#print(r)
 
 code.interact(local=locals())

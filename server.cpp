@@ -271,7 +271,7 @@ int Server::LoadObject(char* buf, int count,  struct sockaddr_in clientAddr, soc
 int Server::MessageHandler(char* buf, int count,  struct sockaddr_in clientAddr, socklen_t clientAddrSize)
 {
     buf[count] = 0;
-    //printf("%s\n",buf);
+    printf("%s\n",buf);
 
     switch(buf[0]){
         case CMD_CREATE_TYPE : this->CreateType(buf, count, clientAddr, clientAddrSize); break;
@@ -305,7 +305,7 @@ void* server_thread(void* context)
 {
     Server *_this_ = (Server*)context;
 
-    _this_->s_sockfd = socket(AF_INET, SOCK_DGRAM, 0);
+    _this_->s_sockfd = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
     if (_this_->s_sockfd < 0)
     { 
         fprintf(stderr, "ERROR opening socket\n");
@@ -327,10 +327,17 @@ void* server_thread(void* context)
     while (1) {
         struct sockaddr_in clientaddr;
         socklen_t clientlen;
+        printf("waiting for data\n");
+        clientlen = sizeof(clientaddr);
         int n = recvfrom(_this_->s_sockfd, _this_->recvbuf, MAX_BUFFER_SIZE, 0,
          (struct sockaddr *) &clientaddr, &clientlen);
         if(n>0)
             _this_->MessageHandler(_this_->recvbuf, n, clientaddr, clientlen);
+        else
+	{
+	     printf("Receive %d %s\n",errno, strerror(errno));
+
+        }
     }
     
 }

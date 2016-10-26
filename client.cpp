@@ -23,7 +23,7 @@ int Client::__CreateType(char* name,int shape_type, int index_type, int flag, in
     struct CreateTypeHeader *cth = (struct CreateTypeHeader*)(&(h->cmd_header));
     int size = 0;
     struct sockaddr_in s_addr;
-    socklen_t slen = 0;
+    socklen_t slen = sizeof(s_addr);
     int ret;
     // Create Packet
     h->cmd = CMD_CREATE_TYPE;
@@ -56,7 +56,7 @@ int Client::__StoreObject(char* t_name, char* sub_name, union Shape shape, void*
     struct StoreObjectHeader * soh = (struct StoreObjectHeader*)(&(h->cmd_header));
     int size = 0;
     struct sockaddr_in s_addr;
-    socklen_t slen = 0;
+    socklen_t slen = sizeof(s_addr);
     int ret;
     char* ptr;
 
@@ -109,7 +109,7 @@ int Client::__QueryObjectRange(char* t_name, struct Rect range, char** result, i
     struct QueryObjectRangeHeader *qorh = (struct QueryObjectRangeHeader*)(&(h->cmd_header));
     int size = 0;
     struct sockaddr_in s_addr;
-    socklen_t slen = 0;
+    socklen_t slen = sizeof(s_addr);
     int ret;
     // Create Packet
     h->cmd = CMD_QUERY_OBJECT_RANGE;
@@ -141,7 +141,7 @@ int Client::__LoadObject(char* t_name, char* sub_name, void** result, int* lengt
     struct LoadObjectHeader *loh = (struct LoadObjectHeader*)(&(h->cmd_header));
     int size = 0;
     struct sockaddr_in s_addr;
-    socklen_t slen = 0;
+    socklen_t slen = sizeof(s_addr);
     int ret;
     char* ptr;
 
@@ -244,7 +244,7 @@ int Client::LoadObject(char* t_name, char* sub_name, void** result, int* length)
         for(int node = 0; node < this->cluster->num; node ++)  // Check other node 
         if(node!=this->cluster->thisNode)
         {
-            ret = this->__LoadObject(t_name, sub_name, result, length, this->cluster->thisNode);
+            ret = this->__LoadObject(t_name, sub_name, result, length, node);
             if(ret == RET_SUCCESS)
                 return ret;
         }

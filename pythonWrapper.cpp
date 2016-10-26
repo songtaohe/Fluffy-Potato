@@ -14,8 +14,20 @@ static int init()
 {
     if(isInit == 1) return isInit;
     //TODO get the name and config from /usr/local/XXX/X
-    
-    cluster = new Cluster("node1","/home/songtao/Mapmaking/Fluffy-Potato/Cluster.cfg");
+    char nodename[256];    
+    FILE *fp = fopen("/usr/local/hstnode","rt");
+    printf("We are here !!!\n");
+    if(fp == NULL)
+    {
+      printf("Can not open file\n");
+    }
+    fscanf(fp,"%s",nodename);
+    fclose(fp);
+
+
+    printf("This node is %s\n",nodename);
+
+    cluster = new Cluster(nodename,"/var/nfs/Fluffy-Potato/Cluster.cfg");
     C1 = new Client(cluster);    
 
     isInit = 1;
