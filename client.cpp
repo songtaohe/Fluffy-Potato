@@ -14,7 +14,10 @@ Client::Client(Cluster * cluster)
     setsockopt(this->thisNode->node_socket, SOL_SOCKET, SO_RCVTIMEO,&tv,sizeof(tv));
 }
 
-int Client::CreateType(char* name,int shape_type, int index_type, int flag)
+
+//************   API Primitives  *****************//
+
+int Client::__CreateType(char* name,int shape_type, int index_type, int flag, int node)
 {
     struct Header * h = (struct Header *)(this->sendbuf);
     struct CreateTypeHeader *cth = (struct CreateTypeHeader*)(&(h->cmd_header));
@@ -33,12 +36,11 @@ int Client::CreateType(char* name,int shape_type, int index_type, int flag)
 
     size = sizeof(struct Header) + sizeof(struct CreateTypeHeader) + cth->typeNameLength - 2;
 
-    sendto(this->thisNode->node_socket, this->sendbuf, size, 0, (struct sockaddr *)&(this->thisNode->node_addr), sizeof(this->thisNode->node_addr));
-
-    ret = recvfrom(this->thisNode->node_socket, this->recvbuf, MAX_BUFFER_SIZE, 0, (struct sockaddr *)&s_addr, &slen);
+    sendto(this->cluster->nodelist[node].node_socket, this->sendbuf, size, 0, (struct sockaddr *)&(this->cluster->nodelist[node].node_addr), sizeof(this->cluster->nodelist[node].node_addr));
+    ret = recvfrom(this->cluster->nodelist[node].node_socket, this->recvbuf, MAX_BUFFER_SIZE, 0, (struct sockaddr *)&s_addr, &slen);
  
     if(ret<= 0) return RET_ERROR;
-
+    if(ret==1) return RET_FAILED;
     //Test
     this->recvbuf[ret] = 0;
     if(DEBUG) printf("CreateType result: %s\n",this->recvbuf);
@@ -48,7 +50,7 @@ int Client::CreateType(char* name,int shape_type, int index_type, int flag)
 }
 
 
-int Client::StoreObject(char* t_name, char* sub_name, union Shape shape, void* buf, int length)
+int Client::__StoreObject(char* t_name, char* sub_name, union Shape shape, void* buf, int length, int node)
 {   
     struct Header * h = (struct Header *)(this->sendbuf);
     struct StoreObjectHeader * soh = (struct StoreObjectHeader*)(&(h->cmd_header));
@@ -81,12 +83,17 @@ int Client::StoreObject(char* t_name, char* sub_name, union Shape shape, void* b
     
     size = sizeof(struct Header) + sizeof(struct StoreObjectHeader) + soh->typeNameLength + soh->subNameLength + 1 + length - 2;    
 
-    sendto(this->thisNode->node_socket, this->sendbuf, size, 0, (struct sockaddr *)&(this->thisNode->node_addr), sizeof(this->thisNode->node_addr));
+    //sendto(this->thisNode->node_socket, this->sendbuf, size, 0, (struct sockaddr *)&(this->thisNode->node_addr), sizeof(this->thisNode->node_addr));
 
-    ret = recvfrom(this->thisNode->node_socket, this->recvbuf, MAX_BUFFER_SIZE, 0, (struct sockaddr *)&s_addr, &slen);
+    //ret = recvfrom(this->thisNode->node_socket, this->recvbuf, MAX_BUFFER_SIZE, 0, (struct sockaddr *)&s_addr, &slen);
+
+    sendto(this->cluster->nodelist[node].node_socket, this->sendbuf, size, 0, (struct sockaddr *)&(this->cluster->nodelist[node].node_addr), sizeof(this->cluster->nodelist[node].node_addr));
+    ret = recvfrom(this->cluster->nodelist[node].node_socket, this->recvbuf, MAX_BUFFER_SIZE, 0, (struct sockaddr *)&s_addr, &slen);
+
+
 
     if(ret<= 0) return RET_ERROR;
-
+    if(ret==1) return RET_FAILED;
     //Test
     this->recvbuf[ret] = 0;
     if(DEBUG) printf("StoreObject result: %s\n",this->recvbuf);
@@ -96,7 +103,7 @@ int Client::StoreObject(char* t_name, char* sub_name, union Shape shape, void* b
 }
 
 
-int Client::QueryObjectRange(char* t_name, struct Rect range, char** result)
+int Client::__QueryObjectRange(char* t_name, struct Rect range, char** result, int node)
 {
     struct Header * h = (struct Header *)(this->sendbuf);
     struct QueryObjectRangeHeader *qorh = (struct QueryObjectRangeHeader*)(&(h->cmd_header));
@@ -112,11 +119,15 @@ int Client::QueryObjectRange(char* t_name, struct Rect range, char** result)
     ((char*)&(qorh->data))[qorh->typeNameLength - 1] = 0;
     size = sizeof(struct Header) + sizeof(struct QueryObjectRangeHeader) + qorh->typeNameLength - 2;
 
-    sendto(this->thisNode->node_socket, this->sendbuf, size, 0, (struct sockaddr *)&(this->thisNode->node_addr), sizeof(this->thisNode->node_addr));
-    ret = recvfrom(this->thisNode->node_socket, this->recvbuf, MAX_BUFFER_SIZE, 0, (struct sockaddr *)&s_addr, &slen);
+    //sendto(this->thisNode->node_socket, this->sendbuf, size, 0, (struct sockaddr *)&(this->thisNode->node_addr), sizeof(this->thisNode->node_addr));
+    //ret = recvfrom(this->thisNode->node_socket, this->recvbuf, MAX_BUFFER_SIZE, 0, (struct sockaddr *)&s_addr, &slen);
+
+    sendto(this->cluster->nodelist[node].node_socket, this->sendbuf, size, 0, (struct sockaddr *)&(this->cluster->nodelist[node].node_addr), sizeof(this->cluster->nodelist[node].node_addr));
+    ret = recvfrom(this->cluster->nodelist[node].node_socket, this->recvbuf, MAX_BUFFER_SIZE, 0, (struct sockaddr *)&s_addr, &slen);
+
 
     if(ret<=0) return RET_ERROR;
-    
+    if(ret==1) return RET_FAILED;
     unsigned int *count = (unsigned int *)(this->recvbuf);
     *result = (char*)malloc(sizeof(char)*(ret-sizeof(unsigned int)));
     memcpy(*result, (this->recvbuf)+sizeof(unsigned int), ret-sizeof(unsigned int));
@@ -124,7 +135,7 @@ int Client::QueryObjectRange(char* t_name, struct Rect range, char** result)
     return *count;
 }
 
-int Client::LoadObject(char* t_name, char* sub_name, void** result, int* length)
+int Client::__LoadObject(char* t_name, char* sub_name, void** result, int* length, int node)
 {
     struct Header *h = (struct Header *)(this->sendbuf);
     struct LoadObjectHeader *loh = (struct LoadObjectHeader*)(&(h->cmd_header));
@@ -152,11 +163,15 @@ int Client::LoadObject(char* t_name, char* sub_name, void** result, int* length)
 
     if(DEBUG) printf("Client::LoadObject %d %s\n",size, &(loh->data));
 
-    sendto(this->thisNode->node_socket, this->sendbuf, size, 0, (struct sockaddr *)&(this->thisNode->node_addr), sizeof(this->thisNode->node_addr));
-    ret = recvfrom(this->thisNode->node_socket, this->recvbuf, MAX_BUFFER_SIZE, 0, (struct sockaddr *)&s_addr, &slen);
+    //sendto(this->thisNode->node_socket, this->sendbuf, size, 0, (struct sockaddr *)&(this->thisNode->node_addr), sizeof(this->thisNode->node_addr));
+    //ret = recvfrom(this->thisNode->node_socket, this->recvbuf, MAX_BUFFER_SIZE, 0, (struct sockaddr *)&s_addr, &slen);
+
+    sendto(this->cluster->nodelist[node].node_socket, this->sendbuf, size, 0, (struct sockaddr *)&(this->cluster->nodelist[node].node_addr), sizeof(this->cluster->nodelist[node].node_addr));
+    ret = recvfrom(this->cluster->nodelist[node].node_socket, this->recvbuf, MAX_BUFFER_SIZE, 0, (struct sockaddr *)&s_addr, &slen);
+
 
     if(ret<=0) return RET_ERROR;
-
+    if(ret==1) return RET_FAILED;
     *result = malloc(ret);
     memcpy(*result, (this->recvbuf), ret);
     *length = ret;
@@ -166,6 +181,77 @@ int Client::LoadObject(char* t_name, char* sub_name, void** result, int* length)
     return RET_SUCCESS;
 }
 
+
+//*************   API  ***************
+
+int Client::CreateType(char* name, int shape_type, int index_type, int flag)
+{
+    int ret = RET_SUCCESS;
+
+    for(int node = 0; node < this->cluster->num; node ++)
+    {
+        int _ret;
+        _ret = this->__CreateType(name,shape_type,index_type,flag,node);
+        if(_ret==RET_ERROR)
+        {
+            _ret = this->__CreateType(name,shape_type,index_type,flag,node);
+            if(_ret==RET_ERROR)
+            {
+                _ret = this->__CreateType(name,shape_type,index_type,flag,node);
+                if(_ret==RET_ERROR)
+                {
+                    fprintf(stderr,"Error! Check the Network Connection!\n");
+                    ret = RET_ERROR;
+                }
+            }
+        }
+    }
+
+    return ret;
+}
+
+int Client::StoreObject(char* t_name, char* sub_name, union Shape shape, void* buf, int length)
+{
+    int ret;
+    ret = this->__StoreObject(t_name, sub_name, shape, buf, length, this->cluster->thisNode);
+
+    return ret;
+}
+
+int Client::QueryObjectRange(char* t_name, struct Rect range, char** result)
+{
+    int ret;
+    struct Point loc;
+    int nodeid;
+
+    //This is Wrong!!!!!!!   TODO  TODO  TODO  FIXME FIXME FIXME
+    loc.lat = (range.latmin + range.latmax)/2;
+    loc.lon = (range.lonmin + range.lonmax)/2;
+    nodeid = this->cluster->Query(loc) - 1;
+
+    ret = this->__QueryObjectRange(t_name, range, result, nodeid);//FIXME Check partition!
+
+
+    return ret;
+}
+
+int Client::LoadObject(char* t_name, char* sub_name, void** result, int* length)
+{
+    int ret;
+    ret = this->__LoadObject(t_name, sub_name, result, length, this->cluster->thisNode);
+    if(ret == RET_FAILED)
+    {
+        for(int node = 0; node < this->cluster->num; node ++)  // Check other node 
+        if(node!=this->cluster->thisNode)
+        {
+            ret = this->__LoadObject(t_name, sub_name, result, length, this->cluster->thisNode);
+            if(ret == RET_SUCCESS)
+                return ret;
+        }
+    }
+
+    return ret;
+}
 
 
 

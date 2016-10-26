@@ -21,6 +21,11 @@ int Node::NodeInit(char* name, char* ip, char* baseport)
 
     this->node_socket = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
 
+    struct timeval tv;
+    tv.tv_sec = 2; // 2 second timeout
+    tv.tv_usec = 0;
+    setsockopt(this->node_socket, SOL_SOCKET, SO_RCVTIMEO,&tv,sizeof(tv));
+
 }
 
 

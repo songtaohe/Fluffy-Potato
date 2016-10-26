@@ -6,6 +6,7 @@
 
 
 #define RET_ERROR                  -1
+#define RET_FAILED                 -2
 #define RET_SUCCESS                0
 
 

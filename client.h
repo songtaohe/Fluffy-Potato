@@ -26,17 +26,27 @@ public:
     //Load object by full name
     int LoadObject(char* t_name, char* sub_name, void** result, int* length);
 
+private:
+//******** API Primitives *******************
+
+    int __CreateType(char* name, int shape_type, int index_type, int flag, int node);
+    int __StoreObject(char* t_name, char* sub_name, union Shape shape, void* buf, int length, int node);
+    int __QueryObjectRange(char* t_name, struct Rect range, char** result, int node);
+    int __LoadObject(char* t_name, char* sub_name, void** result, int* length, int node);
 
 
 
 
 
-
-
-
+public:
     char* sendbuf;
     char* recvbuf;
     Cluster * cluster;
     Node* thisNode;
+
+
+
+
+
 
 };

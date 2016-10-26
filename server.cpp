@@ -52,13 +52,14 @@ int Server::CreateType(char* buf, int count,  struct sockaddr_in clientAddr, soc
     if(hashEntity == NULL)
     {
         delete base;
-        memcpy(this->sendbuf,"Name Existed!\0",13);
+        this->sendbuf[0] = 'e';
+        sendto(this->s_sockfd, this->sendbuf, 1, 0, (struct sockaddr *)&(clientAddr), clientAddrSize);
     }
     else
     {
         memcpy(this->sendbuf,"Type Created!\0",13);
+        sendto(this->s_sockfd, this->sendbuf, 13, 0, (struct sockaddr *)&(clientAddr), clientAddrSize);
     }
-    sendto(this->s_sockfd, this->sendbuf, 13, 0, (struct sockaddr *)&(clientAddr), clientAddrSize);
 }
 
 
@@ -135,14 +136,16 @@ int Server::StoreObject(char* buf, int count,  struct sockaddr_in clientAddr, so
     printf("Mark ret\n");
     if(ret == RET_ERROR)
     {
-        memcpy(this->sendbuf,"Error!       \0",13);
+        this->sendbuf[0] = 'e';
+        sendto(this->s_sockfd, this->sendbuf, 1, 0, (struct sockaddr *)&(clientAddr), clientAddrSize);
+
     }
     else
     {
         memcpy(this->sendbuf,"Successful!  \0",13);
+        sendto(this->s_sockfd, this->sendbuf, 13, 0, (struct sockaddr *)&(clientAddr), clientAddrSize);
     }
 
-    sendto(this->s_sockfd, this->sendbuf, 13, 0, (struct sockaddr *)&(clientAddr), clientAddrSize);
 
 
     //Insert to obj hash
@@ -212,8 +215,8 @@ int Server::QueryObjectRange(char* buf, int count,  struct sockaddr_in clientAdd
 
     if(ret == RET_ERROR)
     {
-        memcpy(this->sendbuf,"Error!       \0",13);
-        sendto(this->s_sockfd, this->sendbuf, 13, 0, (struct sockaddr *)&(clientAddr), clientAddrSize);
+        this->sendbuf[0] = 'e';
+        sendto(this->s_sockfd, this->sendbuf, 1, 0, (struct sockaddr *)&(clientAddr), clientAddrSize);
     }
     else
     {
@@ -251,8 +254,8 @@ int Server::LoadObject(char* buf, int count,  struct sockaddr_in clientAddr, soc
 
     if(ret == RET_ERROR)
     {
-        memcpy(this->sendbuf,"Error!       \0",13);
-        sendto(this->s_sockfd, this->sendbuf, 13, 0, (struct sockaddr *)&(clientAddr), clientAddrSize);
+        this->sendbuf[0] = 'e';
+        sendto(this->s_sockfd, this->sendbuf, 1, 0, (struct sockaddr *)&(clientAddr), clientAddrSize);
     }
     else
     {
