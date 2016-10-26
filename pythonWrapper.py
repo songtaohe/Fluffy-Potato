@@ -1,7 +1,7 @@
 from ctypes import *
 import code
 import cPickle as pickle
-
+import socket
 
 SHAPE_NULL  = 0
 SHAPE_POINT = 1
@@ -39,7 +39,14 @@ class Potato(object):
         self._LoadObject.restype = c_int
         self._LoadObject.argtypes = [c_char_p, c_char_p, POINTER(POINTER(c_char))]
 
-
+        self.ip = []
+        self.port = []
+        with open("Cluster.cfg") as f:
+            content = f.readlines()
+            for line in content:
+                if len(line.split())>1: 
+                    self.ip.append(line.split()[1])
+                    self.port.append(int(line.split()[2])+1)
 
     def CreateType(self,t_name, shape = SHAPE_POINT, index = INDEX_LIST, flag = OBJ_READONLY):
         return self._CreateType(c_char_p(t_name), shape, index, flag)
@@ -82,7 +89,13 @@ class Potato(object):
             return pickle.loads((cast(result,c_char_p).value).strip())
         else:
             return None
-        
+
+    def Schedule(self,cmd,state,node):
+        s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        s.connect((self.ip[node],self.port[node]))
+        msg = cmd + " " + state
+        s.send(msg)
+        s.close()
 
 
 mPotato = Potato("/var/nfs/Fluffy-Potato/pythonWrapper.so")
