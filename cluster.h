@@ -15,6 +15,7 @@ char* ip;
 char* baseport;
 struct sockaddr_in node_addr;
 int node_socket;
+int port_num;
 
 };
 

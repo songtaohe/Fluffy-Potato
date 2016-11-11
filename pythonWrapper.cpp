@@ -15,11 +15,11 @@ static int init()
     if(isInit == 1) return isInit;
     //TODO get the name and config from /usr/local/XXX/X
     char nodename[256];    
-    FILE *fp = fopen("/usr/local/hstnode","rt");
-    printf("We are here !!!\n");
+    FILE *fp = fopen(PATH_TO_NODEID,"rt");
+    printf("We are here !!! %s\n",PATH_TO_NODEID);
     if(fp == NULL)
     {
-      printf("Can not open file\n");
+      printf("Can not open file %s\n",PATH_TO_NODEID);
     }
     fscanf(fp,"%s",nodename);
     fclose(fp);
@@ -27,7 +27,7 @@ static int init()
 
     printf("This node is %s\n",nodename);
 
-    cluster = new Cluster(nodename,"/var/nfs/Fluffy-Potato/Cluster.cfg");
+    cluster = new Cluster(nodename,PATH_TO_CONFIG);
     C1 = new Client(cluster);    
 
     isInit = 1;

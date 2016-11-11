@@ -35,6 +35,7 @@ Cluster::Cluster(char* thisNode, char* configFile)
     char name[256];
     char ip[256];
     char baseport[256];
+	int port_num = 1;
 
     fscanf(fp,"%d\n",&(this->num));
     this->nodelist = (Node*)malloc(sizeof(Node)*this->num);
@@ -43,9 +44,11 @@ Cluster::Cluster(char* thisNode, char* configFile)
         fscanf(fp,"%s",name);
         fscanf(fp,"%s",ip);
         fscanf(fp,"%s",baseport);
+		fscanf(fp,"%d",&port_num);
 
         this->nodelist[i].NodeInit(name,ip,baseport);
-
+		this->nodelist[i].port_num = port_num;
+		
         if(strcmp(name, thisNode) == 0)
         {
             this->thisNode = i;

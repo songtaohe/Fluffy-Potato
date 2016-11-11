@@ -90,6 +90,7 @@ class Potato(object):
 
     def Schedule(self,cmd,state,node):
         s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        print self.ip[node], self.port[node]
         s.connect((self.ip[node],self.port[node]))
         msg = cmd + " " + state
         s.send(msg)
