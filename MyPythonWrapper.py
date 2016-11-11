@@ -10,8 +10,8 @@ SHAPE_GIRD  = 3
 
 INDEX_NULL  = 0
 INDEX_LIST  = 1
-INDEX_QTREE = 2
-INDEX_RTREE = 3
+INDEX_RTREE = 2
+INDEX_QTREE = 3
 
 OBJ_READONLY   = 1
 OBJ_ATOM_FETCH = 8
@@ -25,9 +25,9 @@ class Potato(object):
         self._CreateType.restype = c_int
         self._CreateType.argtypes = [c_char_p, c_int, c_int, c_int]
 
-        self._StoreObjectPoint = self.lib.StoreObjectPoint
-        self._StoreObjectPoint.restype = c_int
-        self._StoreObjectPoint.argtypes = [c_char_p, c_char_p, c_double, c_double, c_char_p]
+        self._StoreObject = self.lib.StoreObject
+        self._StoreObject.restype = c_int
+        self._StoreObject.argtypes = [c_char_p, c_char_p, c_double, c_double, c_double, c_double, c_char_p]
 
         self._QueryObjectRange = self.lib.QueryObjectRange
         self._QueryObjectRange.restype = c_int
@@ -52,7 +52,7 @@ class Potato(object):
     def StoreObject(self, t_name, obj, sub_name = None, shape = SHAPE_POINT, shape_data = [0,0,0,0]):
         string_obj = pickle.dumps(obj)
         if len(string_obj) > 16000 :
-            print("Error, object size exceeds 16,000! We cannot support so far.\n")
+            print("Error, object size exceeds 16,000! We cannot support it so far.\n")
             return 0
 
         if sub_name is None:
@@ -60,8 +60,18 @@ class Potato(object):
             t_name = name[0]
             sub_name = name[1]
 
+        shape = [0, 0, 0, 0]
+        if len(shape_data) == 4:
+            shape = shape_data
+        if len(shape_data) == 2:
+            shape[0] = shape_data[0]
+            shape[1] = shape_data[1]
+            shape[2] = shape_data[0]
+            shape[3] = shape_data[1]
+
+		
         #ONLY POINT NOW
-        return self._StoreObjectPoint(c_char_p(t_name), c_char_p(sub_name), shape_data[0], shape_data[1], c_char_p(string_obj))
+        return self._StoreObject(c_char_p(t_name), c_char_p(sub_name), shape[0], shape[1], shape[2], shape[3], c_char_p(string_obj))
 
 
 

@@ -39,8 +39,8 @@ struct Header
 struct Rect
 {
     double latmin;
-    double latmax;
     double lonmin;
+    double latmax;
     double lonmax;
 };
 

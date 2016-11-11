@@ -225,9 +225,11 @@ int Client::QueryObjectRange(char* t_name, struct Rect range, char** result)
     int nodeid;
 
     //This is Wrong!!!!!!!   TODO  TODO  TODO  FIXME FIXME FIXME
-    loc.lat = (range.latmin + range.latmax)/2;
-    loc.lon = (range.lonmin + range.lonmax)/2;
-    nodeid = this->cluster->Query(loc) - 1;
+    //loc.lat = (range.latmin + range.latmax)/2;
+    //loc.lon = (range.lonmin + range.lonmax)/2;
+    //nodeid = this->cluster->Query(loc) - 1;
+
+	nodeid = 0;
 
     ret = this->__QueryObjectRange(t_name, range, result, nodeid);//FIXME Check partition!
 

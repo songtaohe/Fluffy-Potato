@@ -1,4 +1,4 @@
-from MyPythonWrapper import Potato
+from MyPythonWrapper import *
 import code
 
 class State(object):
@@ -13,11 +13,12 @@ mPotato = Potato("/home/songtao/Mapmaking/Fluffy-Potato/pythonWrapper.so")
 
 state = State();
 
-mPotato.CreateType("potatoA")
+mPotato.CreateType("potatoB",shape=SHAPE_RECT, index=INDEX_RTREE)
+#mPotato.CreateType("potatoB")
 
-mPotato.StoreObject("potatoA@2", state, shape_data = [1,1])
+mPotato.StoreObject("potatoB@2", state, shape_data = [1,1])
 
-mPotato.Schedule("HotPotato.py","potatoA@2",0)
+mPotato.Schedule("HotPotato.py","potatoB@2",0)
 
 
 code.interact(local=locals())

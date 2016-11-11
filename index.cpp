@@ -39,6 +39,7 @@ struct IndexEntity** IndexList::QueryRect(struct Rect range, int boundary)
             switch(this->shape_type)
             {
                 case SHAPE_POINT:
+					printf("Index List %.2f %.2f %.2f %.2f %.2f %.2f \n",range.latmin,range.lonmin,range.latmax,range.lonmax,head->shape.point.lat, head->shape.point.lon);
                     if(head->shape.point.lat >= range.latmin && head->shape.point.lat <= range.latmax)
                         if(head->shape.point.lon >= range.lonmin && head->shape.point.lon <= range.lonmax)
                             flag = 1;

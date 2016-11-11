@@ -23,12 +23,12 @@ state.node = 0
 state.x = state.x + 1
 state.y = state.y + 1
 
-if(state.myid > 1000):
+if(state.myid > 100):
     quit()
 
-mPotato.StoreObject("potatoA@"+str(state.myid),state,shape_data = [state.x,state.y])
+mPotato.StoreObject("potatoB@"+str(state.myid),state,shape_data = [0,0,state.x,state.y])
 
-mPotato.Schedule("HotPotato.py","potatoA@"+str(state.myid),state.node)
+mPotato.Schedule("HotPotato.py","potatoB@"+str(state.myid),state.node)
 
 
 

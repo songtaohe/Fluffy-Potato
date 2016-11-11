@@ -5,7 +5,7 @@ PATH_TO_NODEID="\"/home/songtao/Mapmaking/Fluffy-Potato/nodeid\""
 MACRO=-DPATH_TO_CONFIG=$(PATH_TO_CONFIG) -DPATH_TO_NODEID=$(PATH_TO_NODEID)
 CPPC=g++
 CPPFLAGS= -o2 -pthread -std=c++11 -fPIC $(MACRO)
-OBJ=server.o hashTable.o index.o cluster.o client.o
+OBJ=server.o hashTable.o index.o index_rtree.o cluster.o client.o 
 #W_OBJ = client.o
 
 All : Client Server Wrapper
@@ -39,6 +39,9 @@ hashTable.o : hashTable.cpp
 
 index.o : index.cpp
 	$(CPPC) $(CPPFLAGS) -c index.cpp -o index.o
+
+index_rtree.o : index_rtree.cpp
+	$(CPPC) $(CPPFLAGS) -c index_rtree.cpp -o index_rtree.o
 
 cluster.o : cluster.cpp
 	$(CPPC) $(CPPFLAGS) -c cluster.cpp -o cluster.o

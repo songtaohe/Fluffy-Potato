@@ -43,12 +43,14 @@ int CreateType(char* t_name, int shape, int index, int flag)
     return C1->CreateType(t_name,shape,index,flag);
 }
 
-int StoreObjectPoint(char* t_name, char* sub_name, double lat, double lon, char* obj)
+int StoreObject(char* t_name, char* sub_name, double lat, double lon, double lat2, double lon2, char* obj)
 {
     init();
     union Shape shape;
     shape.point.lat = lat;
     shape.point.lon = lon;
+	shape.rect.latmax = lat2;
+	shape.rect.lonmax = lon2;
     
     return C1->StoreObject(t_name, sub_name, shape, obj, strlen(obj));
 } 

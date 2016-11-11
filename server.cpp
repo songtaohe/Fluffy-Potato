@@ -47,6 +47,15 @@ int Server::CreateType(char* buf, int count,  struct sockaddr_in clientAddr, soc
         printf("Set indexbase to %p\n",base);
     }    
 
+
+    if(cth->index_type == INDEX_RTREE)
+    {
+        IndexRTree* index = new IndexRTree(cth->shape_type);
+        base = (IndexBase*)index;
+        _type->indexbase = base;
+        printf("Set indexbase to %p\n",base);
+    }    
+
     void* hashEntity = this->pht_type->Insert(&(cth->typeName),_type,sizeof(struct Type));
 
     if(hashEntity == NULL)
@@ -130,6 +139,16 @@ int Server::StoreObject(char* buf, int count,  struct sockaddr_in clientAddr, so
                 
                 _type->indexbase->Insert(&IE);
             }            
+            if(_type->index_type == INDEX_RTREE)
+            {
+                struct IndexEntity IE;
+                IE.shape = soh->shape;
+                IE.toHash = _hash;
+                IE.next = NULL;
+                printf("Insert Index %p\n",_type->indexbase);
+                
+                _type->indexbase->Insert(&IE);
+            }            
         }
         
     }
@@ -189,6 +208,8 @@ int Server::QueryObjectRange(char* buf, int count,  struct sockaddr_in clientAdd
                 char* ptr = (char*)(this->sendbuf)+sizeof(unsigned int);
                 while(IEcur != NULL)
                 {   
+					if(IEcur->toHash == NULL) break;
+
                     (*count) ++;
                     ptr += sprintf(ptr,"%s\n",((struct HashTableEntry*)(IEcur->toHash))->name);
                     IEcur = IEcur -> next;
