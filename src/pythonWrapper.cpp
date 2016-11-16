@@ -55,6 +55,30 @@ int StoreObject(char* t_name, char* sub_name, double lat, double lon, double lat
     return C1->StoreObject(t_name, sub_name, shape, obj, strlen(obj));
 } 
 
+int StoreArray(char* t_name, char* sub_name, int sx, int sy, int wx, int wy, int op1, int op2, float* data, int len)
+{
+	int size = sizeof(struct Array2DHeader) + len*sizeof(float);
+	static char buf[MAX_BUFFER_SIZE];
+	struct Array2DHeader * h = (struct Array2DHeader*)buf;
+	float* dp = (float*)&(h->data);
+	union Shape shape;
+	init();
+
+	h->sx = sx;
+	h->sy = sy;
+	h->wx = wx;
+	h->wy = wy;	
+	h->op1 = op1;
+	h->op2 = op2;
+
+    printf("%d %d %d %d %d %d\n",h->sx,h->sy,h->wx, h->wy, h->op1, h->op2);
+
+	memcpy(dp, data, len*sizeof(float));
+
+	return C1->StoreObject(t_name, sub_name, shape, buf, size);
+}
+
+
 
 int QueryObjectRange(char* t_name, double latmin, double lonmin, double latmax, double lonmax, char** result, int* count)
 {
@@ -77,6 +101,10 @@ int LoadObject(char* t_name, char* sub_name, char** obj)
     return C1->LoadObject(t_name,sub_name, (void**)obj, &length);
 }
 
+int LoadArray(char* t_name, char* sub_name, float** obj, int* dimx, int* dimy)
+{
+	//Use LoadObject and do staff in Python?
+}
 
 
 }

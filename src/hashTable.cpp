@@ -28,6 +28,11 @@ uint64_t ParallelHashTable::FNV_Hash_64(char *name, int len)
 
 struct HashTableEntry* ParallelHashTable::Query(char* name)
 {
+	return this->QueryAndAction(name,NULL, NULL);
+}
+
+struct HashTableEntry* ParallelHashTable::QueryAndAction(char* name,int(*action)(struct HashTableEntry*, void*), void* ActionArg)
+{
     uint64_t key = this->FNV_Hash_64(name,strlen(name));
     uint32_t index = key % (this->size);
     struct HashTableEntry * ret = NULL;
@@ -49,6 +54,10 @@ struct HashTableEntry* ParallelHashTable::Query(char* name)
             
             cur = &((*cur) -> next);
         }        
+		if(ret!=NULL && action!=NULL)
+		{
+			(*action)(ret, ActionArg);  // This action is atomic!
+		}
     }
     pthread_rwlock_unlock(&(this->rwlock[index]));
     

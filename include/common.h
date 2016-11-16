@@ -1,5 +1,6 @@
 //#define MAX_BUFFER_SIZE 16384
-#define MAX_BUFFER_SIZE 1024
+#define MAX_BUFFER_SIZE 17384
+//#define MAX_BUFFER_SIZE 1024
 #include <cstdint>
 #include <pthread.h>
 #include <malloc.h>

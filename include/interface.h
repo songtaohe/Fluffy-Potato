@@ -18,7 +18,8 @@
 #define SHAPE_POINT                1
 #define SHAPE_RECT                 2
 #define SHAPE_GIRD                 3
-#define SHAPE_NULL                 4
+#define SHAPE_ARRAY				   4
+#define SHAPE_NULL                 0
 
 #define INDEX_NULL                 0
 #define INDEX_LIST                 1
@@ -29,6 +30,9 @@
 #define OBJ_PRESISTENT             4
 #define OBJ_ATOM_FETCH             8
 
+#define ARRAY2D_OP_INIT			   1
+#define ARRAY2D_OP_ADD             2
+#define ARRAY2D_OP_MUL	           3
 
 struct Header
 {
@@ -63,6 +67,20 @@ union Shape
     struct Rect rect;
     struct Gird gird;
 };
+
+struct Array2DHeader
+{
+	int sx; // start point of x
+	int sy; // start point of y
+	unsigned char wx; // width in x dim
+	unsigned char wy; // width in y dim
+	unsigned char op1; // Operation 1
+	unsigned char op2; // Operation 2
+	// from (sx,sy) to (sx+wx-1, sy+wy-1)
+	char data; // Start of data
+};
+
+
 
 
 

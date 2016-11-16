@@ -72,6 +72,43 @@ int Server::CreateType(char* buf, int count,  struct sockaddr_in clientAddr, soc
 }
 
 
+int ArrayAction(struct HashTableEntry * input, void* arg)
+{
+	struct Array2DHeader * h = (struct Array2DHeader*)arg;
+
+	if(h->op1 == ARRAY2D_OP_INIT)
+	{
+        printf("Initialize Array\n");
+		if(input->data != NULL)
+			free(input->data);
+
+		input->data = (char*)malloc(sizeof(struct Array2DHeader) + (h->wx * h->wy) * sizeof(float));
+        ((struct Array2DHeader *)(input->data))->wx = h->wx;
+        ((struct Array2DHeader *)(input->data))->wy = h->wy;
+    
+		for(int i=0;i<(h->wx * h->wy);i++) ((float*)(&((struct Array2DHeader*)(input->data))->data))[i] = 0.0f;		
+	}
+	else
+	{
+        printf("Array Atomic Add\n");
+		float* dst = (float*)(&((struct Array2DHeader*)(input->data))->data);
+		float* src = (float*)(&(h->data));
+		int dim = ((struct Array2DHeader*)(input->data))->wy;
+        printf("%d %d %d %d\n",h->sx, h->sy, h->wx, h->wy);
+		for(int i = h->sx; i<h->sx + h->wx; i++)
+		for(int j = h->sy; j<h->sy + h->wy; j++)
+		{
+			dst[i*dim + j] += src[(i-h->sx)*(h->wy) + j-h->sy]; //TODO Let's only do add now
+            printf("Result A(%d, %d) = %.2f\n", i,j, dst[i*dim + j]);
+		}
+	}
+
+	return 0;
+}
+
+
+
+
 int Server::StoreObject(char* buf, int count,  struct sockaddr_in clientAddr, socklen_t clientAddrSize)
 {
     struct Header * h = (struct Header *)(buf);
@@ -106,7 +143,17 @@ int Server::StoreObject(char* buf, int count,  struct sockaddr_in clientAddr, so
     {
 
         struct Type *_type = (struct Type*)(h_type->data);
-        struct HashTableEntry* h_obj = this->pht_obj->Query(full_name);
+        struct HashTableEntry* h_obj = NULL;
+		
+		if(_type->shape_type == SHAPE_ARRAY)
+		{
+			h_obj = this->pht_obj->QueryAndAction(full_name,ArrayAction, (void*)(&(soh->data) + soh->dataOffset));
+		}
+		else
+		{
+			h_obj = this->pht_obj->Query(full_name);
+		}
+
         printf("Query h_obj %p\n",h_obj);
 
         if(h_obj != NULL)
@@ -118,9 +165,16 @@ int Server::StoreObject(char* buf, int count,  struct sockaddr_in clientAddr, so
             }
             else
             {
-                free(h_obj->data);
-                h_obj->data = malloc(soh->objSize);
-                memcpy(h_obj->data, &(soh->data) + soh->dataOffset, soh->objSize);
+				if(_type->shape_type == SHAPE_ARRAY)
+				{
+					//We have nothing to do here now, due to we have already take the action.					
+				}
+				else
+                {
+					free(h_obj->data);
+                	h_obj->data = malloc(soh->objSize);
+                	memcpy(h_obj->data, &(soh->data) + soh->dataOffset, soh->objSize);
+				}
                 //TODO change position!!!
 
             }
@@ -129,6 +183,27 @@ int Server::StoreObject(char* buf, int count,  struct sockaddr_in clientAddr, so
         {
             printf("Mark Insert\n");
             void* _hash = this->pht_obj->Insert(full_name, &(soh->data) + soh->dataOffset, soh->objSize);
+
+			if(_type->shape_type == SHAPE_ARRAY)
+			{
+                void* ptr = (&(soh->data) + soh->dataOffset);
+                int op1 = ((struct Array2DHeader *)ptr)->op1;
+                unsigned char wx = ((struct Array2DHeader *)ptr)->wx; 
+                unsigned char wy = ((struct Array2DHeader *)ptr)->wy; 
+            
+                ((struct Array2DHeader *)ptr)->op1 = ARRAY2D_OP_INIT;
+                ((struct Array2DHeader *)ptr)->wx = 64; // FIXME
+                ((struct Array2DHeader *)ptr)->wy = 64; // FIXME
+                this->pht_obj->QueryAndAction(full_name,ArrayAction, (void*)(&(soh->data) + soh->dataOffset));
+        
+                ((struct Array2DHeader *)ptr)->op1 = op1;
+                ((struct Array2DHeader *)ptr)->wx = wx;
+                ((struct Array2DHeader *)ptr)->wy = wy; 
+   
+				this->pht_obj->QueryAndAction(full_name,ArrayAction, (void*)(&(soh->data) + soh->dataOffset));
+			}
+
+
             if(_type->index_type == INDEX_LIST)
             {
                 struct IndexEntity IE;

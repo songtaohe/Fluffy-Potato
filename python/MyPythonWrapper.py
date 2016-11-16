@@ -7,6 +7,7 @@ SHAPE_NULL  = 0
 SHAPE_POINT = 1
 SHAPE_RECT  = 2
 SHAPE_GIRD  = 3
+SHAPE_ARRAY = 4
 
 INDEX_NULL  = 0
 INDEX_LIST  = 1
@@ -28,6 +29,10 @@ class Potato(object):
         self._StoreObject = self.lib.StoreObject
         self._StoreObject.restype = c_int
         self._StoreObject.argtypes = [c_char_p, c_char_p, c_double, c_double, c_double, c_double, c_char_p]
+
+        self._StoreArray = self.lib.StoreArray
+        self._StoreArray.restype = c_int
+        self._StoreArray.argtypes = [c_char_p, c_char_p, c_int, c_int, c_int, c_int, c_int, c_int, c_void_p, c_int]
 
         self._QueryObjectRange = self.lib.QueryObjectRange
         self._QueryObjectRange.restype = c_int
@@ -72,6 +77,18 @@ class Potato(object):
 		
         #ONLY POINT NOW
         return self._StoreObject(c_char_p(t_name), c_char_p(sub_name), shape[0], shape[1], shape[2], shape[3], c_char_p(string_obj))
+
+    def StoreArray(self, t_name, data, dim = [0,0,0,0], op = 1,  sub_name = None):
+        if sub_name is None:
+            name = t_name.split('@')
+            t_name = name[0]
+            sub_name = name[1]
+        
+
+        return self._StoreArray(c_char_p(t_name), c_char_p(sub_name),c_int(dim[0]), c_int(dim[1]), c_int(dim[2]), c_int(dim[3]), c_int(op), c_int(op), data.ravel().ctypes, c_int(dim[2]*dim[3]))
+
+
+
 
 
 

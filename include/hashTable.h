@@ -32,6 +32,7 @@ public:
 
     uint64_t FNV_Hash_64(char* name, int len);
     struct HashTableEntry* Query(char* name);
+	struct HashTableEntry* QueryAndAction(char* name,int(*action)(struct HashTableEntry*, void*), void* ActionArg);
     void* Insert(char* name, void * buf, int bufsize);
     void Delete(char* name);
     //uint64_t GenerateKey(uint16_t MachineID, uint8_t LocalID);
