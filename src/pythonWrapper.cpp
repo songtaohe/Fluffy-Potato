@@ -71,9 +71,12 @@ int StoreArray(char* t_name, char* sub_name, int sx, int sy, int wx, int wy, int
 	h->op1 = op1;
 	h->op2 = op2;
 
-    printf("%d %d %d %d %d %d\n",h->sx,h->sy,h->wx, h->wy, h->op1, h->op2);
+    //data[0] = data[0] + 1;
 
+    printf("StoreArray %d %d %d %d %d %d size %d\n",h->sx,h->sy,h->wx, h->wy, h->op1, h->op2,size);
 	memcpy(dp, data, len*sizeof(float));
+
+    //for(int i = 0;i<len;i++) printf("[%d %.2f]\n",i,data[i]);
 
 	return C1->StoreObject(t_name, sub_name, shape, buf, size);
 }
@@ -101,9 +104,21 @@ int LoadObject(char* t_name, char* sub_name, char** obj)
     return C1->LoadObject(t_name,sub_name, (void**)obj, &length);
 }
 
-int LoadArray(char* t_name, char* sub_name, float** obj, int* dimx, int* dimy)
+int LoadArray(char* t_name, char* sub_name, float* data, int* dimx, int* dimy)
 {
 	//Use LoadObject and do staff in Python?
+    struct Array2DHeader * h = NULL;    
+    int length = 0;
+    int ret = C1->LoadObject(t_name,sub_name, (void**)(&h), &length);
+    printf("ret %d\n",ret);
+
+    if(ret == 0)
+    {
+        printf("size %d %d\n",h->wx,h->wy);
+        memcpy(data,&(h->data),sizeof(float)*h->wx*h->wy);
+    }
+
+    return ret;
 }
 
 

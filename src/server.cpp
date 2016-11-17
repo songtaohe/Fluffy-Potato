@@ -78,11 +78,12 @@ int ArrayAction(struct HashTableEntry * input, void* arg)
 
 	if(h->op1 == ARRAY2D_OP_INIT)
 	{
-        printf("Initialize Array\n");
+        printf("Initialize Array %d %d\n",h->wx, h->wy);
 		if(input->data != NULL)
 			free(input->data);
 
 		input->data = (char*)malloc(sizeof(struct Array2DHeader) + (h->wx * h->wy) * sizeof(float));
+        input->datasize = sizeof(struct Array2DHeader) + (h->wx * h->wy) * sizeof(float);
         ((struct Array2DHeader *)(input->data))->wx = h->wx;
         ((struct Array2DHeader *)(input->data))->wy = h->wy;
     
@@ -99,7 +100,7 @@ int ArrayAction(struct HashTableEntry * input, void* arg)
 		for(int j = h->sy; j<h->sy + h->wy; j++)
 		{
 			dst[i*dim + j] += src[(i-h->sx)*(h->wy) + j-h->sy]; //TODO Let's only do add now
-            printf("Result A(%d, %d) = %.2f\n", i,j, dst[i*dim + j]);
+            //printf("Result A(%d, %d) = %.2f   += %.2f\n", i,j, dst[i*dim + j],src[(i-h->sx)*(h->wy) + j - h->sy]);
 		}
 	}
 

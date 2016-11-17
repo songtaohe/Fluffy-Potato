@@ -2,6 +2,7 @@ from ctypes import *
 import code
 import cPickle as pickle
 import socket
+import numpy as np
 
 SHAPE_NULL  = 0
 SHAPE_POINT = 1
@@ -41,6 +42,10 @@ class Potato(object):
         self._LoadObject = self.lib.LoadObject
         self._LoadObject.restype = c_int
         self._LoadObject.argtypes = [c_char_p, c_char_p, POINTER(POINTER(c_char))]
+
+        self._LoadArray = self.lib.LoadArray
+        self._LoadArray.restype = c_int
+        self._LoadArray.argtypes = [c_char_p, c_char_p, c_void_p, POINTER(c_int), POINTER(c_int)]
 
         self.ip = []
         self.port = []
@@ -112,6 +117,22 @@ class Potato(object):
         ret = self._LoadObject(c_char_p(t_name), c_char_p(sub_name),byref(result))
         if ret >= 0:
             return pickle.loads((cast(result,c_char_p).value).strip())
+        else:
+            return None
+
+    def LoadArray(self, t_name, array = None, sub_name = None):
+        if sub_name is None:
+            name = t_name.split('@')
+            t_name = name[0]
+            sub_name = name[1]
+
+        if array is None:
+            array = np.zeros(64*64, dtype = np.float32)
+        wx = c_int(1)
+        wy = c_int(1)
+        ret = self._LoadArray(c_char_p(t_name), c_char_p(sub_name),  array.ravel().ctypes, byref(wx), byref(wy))
+        if ret >= 0:
+            return array
         else:
             return None
 
